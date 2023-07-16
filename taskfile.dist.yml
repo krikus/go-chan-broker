@@ -1,0 +1,19 @@
+# https://taskfile.dev
+
+version: '3'
+
+
+tasks:
+  test:
+    cmds:
+      - ginkgo -r -p
+    silent: true
+  coverage:
+    preconditions:
+      - sh: ginkgo version
+        msg: 'Install ginkgo with `go install -mod=mod github.com/onsi/ginkgo/v2/ginkgo@latest`'
+      - ginkgo -r -p -cover -coverprofile=.task.coverage.out
+    cmds:
+      - go tool cover -html=.task.coverage.out
+      - rm .task.coverage.out
+    silent: true

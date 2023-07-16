@@ -1,0 +1,28 @@
+name: Test coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '>=1.20.0'
+      - env:
+          TEST_COVERAGE_THRESHOLD: 95
+        run: |
+          export TEST_COVERAGE=$(go test -cover . | grep -o -E "coverage:\s+[0-9]+[\.0-9]+" | cut -d" " -f2)
+          echo "Quality gate: Checking test coverage"
+          echo "Current coverage is $TEST_COVERAGE %"
+          if (( $(echo "$TEST_COVERAGE < $TEST_COVERAGE_THRESHOLD" | bc -l) )); then
+            echo "Quality gate: Test coverage is below threshold of $TEST_COVERAGE_THRESHOLD %"
+            exit 1
+          else
+            echo "Quality gate: Test coverage is above threshold of $TEST_COVERAGE_THRESHOLD %"
+          fi
